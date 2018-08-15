@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package proto;
+
+service Bip44Wallet {
+    rpc InitializeWallet(Entropy) returns (Wallet) {}
+}
+
+message Wallet {
+    string mnemonic = 1;
+    string seed = 2;
+}
+
+message Entropy {
+    string entropy = 1;
+}
+
