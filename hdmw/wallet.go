@@ -1,33 +1,28 @@
 package hdmw
 
 import (
-	"github.com/tyler-smith/go-bip32"
 	"github.com/tyler-smith/go-bip39"
-	"log"
+	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/chaincfg"
 )
 
 type Wallet struct {
 	Mnemonic          string
 	Seed              []byte
 	Entropy           []byte
-	MasterExtendedKey *bip32.Key
+	MasterExtendedKey *hdkeychain.ExtendedKey
 }
 
-func (w *Wallet) InitializeWallet(entropy []byte, password string) *Wallet {
+func CreateWallet(password string) *Wallet {
+	entropy, _ := bip39.NewEntropy(128)
 	mnemonic, _ := bip39.NewMnemonic(entropy)
-	w.Mnemonic = mnemonic
-	seed := bip39.NewSeed(mnemonic, password)
-	w.Seed = seed
-	w.Entropy = entropy
-	masterKey, _ := bip32.NewMasterKey(seed)
-	w.MasterExtendedKey = masterKey
-
-}
-
-func CreateEntropy(bitSize int) (entropy []byte) {
-	if bitSize%32 != 0 {
-		log.Fatalf("bitSize must be divisible by 32")
+	seed, _ := bip39.NewSeedWithErrorChecking(mnemonic, password)
+	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
+	wallet := Wallet{
+		Mnemonic:          mnemonic,
+		Seed:              seed,
+		Entropy:           entropy,
+		MasterExtendedKey: masterKey,
 	}
-	entropy, _ = bip39.NewEntropy(bitSize)
-	return entropy
+	return &wallet
 }
