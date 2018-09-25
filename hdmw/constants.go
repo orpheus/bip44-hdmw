@@ -96,4 +96,5 @@ const (
 	TypeFactomEntryCredits    uint32 = 0x80000084
 	TypeZcash                 uint32 = 0x80000085
 	TypeLisk                  uint32 = 0x80000086
+	TypeFlo                   uint32 = 0x80000216
 )
