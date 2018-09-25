@@ -31,11 +31,42 @@ func CreateWalletWithPassword(password string) *Wallet {
 	return &wallet
 }
 
-func (w *Wallet) GeneratePurposeNode() *hdkeychain.ExtendedKey {
-	p, err := w.MasterNode.Child(hdkeychain.HardenedKeyStart + 44)
+func CreateWalletWithMnemonic(mnemonic, password string) *Wallet {
+	seed, _ := bip39.NewSeedWithErrorChecking(mnemonic, password)
+	//@ToDo: create network params for FLO and LTC, etc
+	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
+
+	wallet := Wallet{
+		Mnemonic: mnemonic,
+		Seed:     seed,
+		//ToDo: generate entropy from mnemonic or seed
+		MasterNode: masterKey,
+	}
+
+	return &wallet
+}
+
+func (w *Wallet) GeneratePurposeNode() (*hdkeychain.ExtendedKey, error) {
+	p, err := w.MasterNode.Child(hdkeychain.HardenedKeyStart + Purpose)
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err
 	}
-	return p
+	return p, nil
+}
+
+func (w *Wallet) GenerateCoinNode(bip44CoinConstant uint32) (*hdkeychain.ExtendedKey, error) {
+	p, err := w.GeneratePurposeNode()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	c, err := p.Child(hdkeychain.HardenedKeyStart + bip44CoinConstant)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return c, nil
+
 }
