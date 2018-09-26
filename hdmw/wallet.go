@@ -7,6 +7,10 @@ import (
 	"github.com/tyler-smith/go-bip39"
 )
 
+type Account struct {
+	Account *hdkeychain.ExtendedKey
+}
+
 type Coin struct {
 	Coin *hdkeychain.ExtendedKey
 }
@@ -59,6 +63,9 @@ func (w *Wallet) GeneratePurposeNode() (*hdkeychain.ExtendedKey, error) {
 	return p, nil
 }
 
+//pkg/errors w errors.wrap
+//when I capitalize the c in coin in the return params, I get an error
+//semantics? better to caps or not the return args?
 func (w *Wallet) GenerateCoinNode(bip44CoinConstant uint32) (coin *Coin, err error) {
 	p, err := w.GeneratePurposeNode()
 	if err != nil {
@@ -77,4 +84,18 @@ func (w *Wallet) GenerateCoinNode(bip44CoinConstant uint32) (coin *Coin, err err
 	}
 
 	return _coin, nil
+}
+
+func (c *Coin) GenerateAccountNode(index uint32) (account *Account, err error) {
+	a, err := c.Coin.Child(index)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	_account := &Account{
+		Account: a,
+	}
+
+	return _account, nil
 }
