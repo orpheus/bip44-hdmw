@@ -7,6 +7,10 @@ import (
 	"github.com/tyler-smith/go-bip39"
 )
 
+type Address struct {
+	Address *hdkeychain.ExtendedKey
+}
+
 type Chain struct {
 	Chain *hdkeychain.ExtendedKey
 }
@@ -116,4 +120,18 @@ func (a *Account) GenerateChainNode(index uint32) (chain *Chain, err error) {
 	}
 
 	return _chain, nil
+}
+
+func (c *Chain) GenerateAddressNode(index uint32) (address *Address, err error) {
+	a, err := c.Chain.Child(index)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	_address := &Address{
+		Address: a,
+	}
+
+	return _address, nil
 }
