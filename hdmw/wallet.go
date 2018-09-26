@@ -47,7 +47,7 @@ func CreateWalletWithMnemonic(mnemonic, password string) *Wallet {
 }
 
 func (w *Wallet) GeneratePurposeNode() (*hdkeychain.ExtendedKey, error) {
-	p, err := w.MasterNode.Child(hdkeychain.HardenedKeyStart + Purpose)
+	p, err := w.MasterNode.Child(Purpose)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -68,5 +68,4 @@ func (w *Wallet) GenerateCoinNode(bip44CoinConstant uint32) (*hdkeychain.Extende
 		return nil, err
 	}
 	return c, nil
-
 }
