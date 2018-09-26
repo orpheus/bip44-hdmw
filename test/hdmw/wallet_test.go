@@ -31,5 +31,6 @@ func TestCreateBitcoinNode(t *testing.T) {
 	if err != nil {
 		t.Log(err)
 	}
-	t.Log(c)
+	coin := spew.Sdump(c)
+	t.Log(coin)
 }

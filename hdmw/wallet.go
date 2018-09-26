@@ -7,6 +7,10 @@ import (
 	"github.com/tyler-smith/go-bip39"
 )
 
+type Coin struct {
+	Coin *hdkeychain.ExtendedKey
+}
+
 type Wallet struct {
 	Mnemonic   string
 	Seed       []byte
@@ -55,7 +59,7 @@ func (w *Wallet) GeneratePurposeNode() (*hdkeychain.ExtendedKey, error) {
 	return p, nil
 }
 
-func (w *Wallet) GenerateCoinNode(bip44CoinConstant uint32) (*hdkeychain.ExtendedKey, error) {
+func (w *Wallet) GenerateCoinNode(bip44CoinConstant uint32) (coin *Coin, err error) {
 	p, err := w.GeneratePurposeNode()
 	if err != nil {
 		fmt.Println(err)
@@ -67,5 +71,10 @@ func (w *Wallet) GenerateCoinNode(bip44CoinConstant uint32) (*hdkeychain.Extende
 		fmt.Println(err)
 		return nil, err
 	}
-	return c, nil
+
+	_coin := &Coin{
+		Coin: c,
+	}
+
+	return _coin, nil
 }
