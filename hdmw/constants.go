@@ -1,6 +1,6 @@
 package hdmw
 
-const Purpose uint32 = 0x8000002C
+const Bip44Purpose uint32 = 0x8000002C
 
 const (
 	TypeBitcoin               uint32 = 0x80000000
