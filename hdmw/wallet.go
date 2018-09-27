@@ -5,6 +5,7 @@ import (
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcutil/hdkeychain"
 	"github.com/tyler-smith/go-bip39"
+	"log"
 )
 
 type Address struct {
@@ -28,6 +29,7 @@ type Wallet struct {
 	Seed       []byte
 	Entropy    []byte
 	MasterNode *hdkeychain.ExtendedKey
+	Coins      []*Coin
 }
 
 func CreateWalletWithPassword(password string) *Wallet {
@@ -62,6 +64,20 @@ func CreateWalletWithMnemonic(mnemonic, password string) *Wallet {
 	return &wallet
 }
 
+func (w *Wallet) Initialize(bip44CoinConstants []uint32) (*Wallet, error) {
+
+	for i := 0; i < len(bip44CoinConstants); i++ {
+		c, err := w.GenerateCoinNode(bip44CoinConstants[i])
+		if err != nil {
+			log.Fatal("Failed to generate coin node: terminate.")
+		}
+
+		w.Coins = append(w.Coins, c)
+	}
+
+	return w, nil
+}
+
 func (w *Wallet) GeneratePurposeNode() (*hdkeychain.ExtendedKey, error) {
 	p, err := w.MasterNode.Child(Purpose)
 	if err != nil {
@@ -72,8 +88,6 @@ func (w *Wallet) GeneratePurposeNode() (*hdkeychain.ExtendedKey, error) {
 }
 
 //pkg/errors w errors.wrap
-//when I capitalize the c in coin in the return params, I get an error
-//semantics? better to caps or not the return args?
 func (w *Wallet) GenerateCoinNode(bip44CoinConstant uint32) (coin *Coin, err error) {
 	p, err := w.GeneratePurposeNode()
 	if err != nil {
