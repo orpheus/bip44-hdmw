@@ -40,14 +40,14 @@ func CreateWalletWithPassword(password string) *Wallet {
 	seed, _ := bip39.NewSeedWithErrorChecking(mnemonic, password)
 	//@ToDo: create network params for FLO and LTC, etc
 	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
-	purpose, _ := masterKey.Child(Purpose)
+	purposeNode, _ := masterKey.Child(Purpose)
 
 	wallet := Wallet{
 		Mnemonic:    mnemonic,
 		Seed:        seed,
 		Entropy:     entropy,
 		MasterNode:  masterKey,
-		PurposeNode: purpose,
+		PurposeNode: purposeNode,
 	}
 
 	return &wallet
@@ -57,12 +57,14 @@ func CreateWalletWithMnemonic(mnemonic, password string) *Wallet {
 	seed, _ := bip39.NewSeedWithErrorChecking(mnemonic, password)
 	//@ToDo: create network params for FLO and LTC, etc
 	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
+	purposeNode, _ := masterKey.Child(Purpose)
 
 	wallet := Wallet{
 		Mnemonic: mnemonic,
 		Seed:     seed,
 		//ToDo: generate entropy from mnemonic or seed
-		MasterNode: masterKey,
+		MasterNode:  masterKey,
+		PurposeNode: purposeNode,
 	}
 
 	return &wallet
@@ -71,7 +73,8 @@ func CreateWalletWithMnemonic(mnemonic, password string) *Wallet {
 func (w *Wallet) Initialize(bip44CoinConstants []uint32) (*Wallet, error) {
 
 	for i := 0; i < len(bip44CoinConstants); i++ {
-		c, err := w.GenerateCoinNode(bip44CoinConstants[i])
+		//ToDo: make this dynamic to where it will choose the network configs based on the constant
+		c, err := w.InitializeCoinNode(&chaincfg.MainNetParams, bip44CoinConstants[i])
 		if err != nil {
 			log.Fatal("Failed to generate coin node: terminate.")
 		}
@@ -83,12 +86,14 @@ func (w *Wallet) Initialize(bip44CoinConstants []uint32) (*Wallet, error) {
 }
 
 //pkg/errors w errors.wrap
-func (w *Wallet) GenerateCoinNode(bip44CoinConstant uint32) (coin *Coin, err error) {
+func (w *Wallet) InitializeCoinNode(network *chaincfg.Params, bip44CoinConstant uint32) (coin *Coin, err error) {
 	c, err := w.PurposeNode.Child(hdkeychain.HardenedKeyStart + bip44CoinConstant)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
+
+	c.SetNet(network)
 
 	_coin := &Coin{
 		Coin: c,
