@@ -7,6 +7,10 @@ import (
 	"testing"
 )
 
+const (
+	mnemonic = "alien indicate barely erosion please recall start together anger panic law latin"
+)
+
 func TestCreateWallet(t *testing.T) {
 	wallet := hdmw.CreateWalletWithPassword("")
 	str := spew.Sdump(wallet)
@@ -51,9 +55,9 @@ func TestCreateWalletWithMnemonic(t *testing.T) {
 func TestDeriveBTCAccount0(t *testing.T) {
 	wallet := hdmw.CreateWalletWithPassword("")
 	wallet.Initialize([]uint32{hdmw.TypeBitcoin})
-	acc, err := wallet.Coins[0].GenerateAccountNode(0)
+	acc, err := wallet.Coins[0].DeriveAccountNode(0)
 	if err != nil {
-		t.Error("Failed to generate account node")
+		t.Error("Failed to derive account node")
 	}
 
 	a := spew.Sdump(acc)
@@ -63,14 +67,14 @@ func TestDeriveBTCAccount0(t *testing.T) {
 func TestDeriveBTCChain0(t *testing.T) {
 	wallet := hdmw.CreateWalletWithPassword("")
 	wallet.Initialize([]uint32{hdmw.TypeBitcoin})
-	acc, err := wallet.Coins[0].GenerateAccountNode(0)
+	acc, err := wallet.Coins[0].DeriveAccountNode(0)
 	if err != nil {
-		t.Error("Failed to generate account node")
+		t.Error("Failed to derive account node")
 	}
 
-	ch, err := acc.GenerateChainNode(0)
+	ch, err := acc.DeriveChainNode(0)
 	if err != nil {
-		t.Error("Failed to generate chain node")
+		t.Error("Failed to derive chain node")
 	}
 
 	c := spew.Sdump(ch)
@@ -80,19 +84,19 @@ func TestDeriveBTCChain0(t *testing.T) {
 func TestDeriveBTCAddress0(t *testing.T) {
 	wallet := hdmw.CreateWalletWithPassword("")
 	wallet.Initialize([]uint32{hdmw.TypeBitcoin})
-	acc, err := wallet.Coins[0].GenerateAccountNode(0)
+	acc, err := wallet.Coins[0].DeriveAccountNode(0)
 	if err != nil {
-		t.Error("Failed to generate account node")
+		t.Error("Failed to derive account node")
 	}
 
-	ch, err := acc.GenerateChainNode(0)
+	ch, err := acc.DeriveChainNode(0)
 	if err != nil {
-		t.Error("Failed to generate chain node")
+		t.Error("Failed to derive chain node")
 	}
 
-	addr, err := ch.GenerateAddressNode(0)
+	addr, err := ch.DeriveAddressNode(0)
 	if err != nil {
-		t.Error("Failed to generate address node")
+		t.Error("Failed to derive address node")
 	}
 
 	a := spew.Sdump(addr)

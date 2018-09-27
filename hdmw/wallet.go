@@ -63,7 +63,7 @@ func CreateWalletWithMnemonic(mnemonic, password string) *Wallet {
 	wallet := Wallet{
 		Mnemonic: mnemonic,
 		Seed:     seed,
-		//ToDo: generate entropy from mnemonic or seed
+		//ToDo: Derive entropy from mnemonic or seed
 		MasterNode:  masterKey,
 		PurposeNode: purposeNode,
 	}
@@ -77,7 +77,7 @@ func (w *Wallet) Initialize(bip44CoinConstants []uint32) (*Wallet, error) {
 		//ToDo: make this dynamic to where it will choose the network configs based on the constant
 		c, err := w.InitializeCoinNode(&chaincfg.MainNetParams, bip44CoinConstants[i])
 		if err != nil {
-			log.Fatal("Failed to generate coin node: terminate.")
+			log.Fatal("Failed to Derive coin node: terminate.")
 		}
 
 		w.Coins = append(w.Coins, c)
@@ -103,7 +103,9 @@ func (w *Wallet) InitializeCoinNode(network *chaincfg.Params, bip44CoinConstant 
 	return _coin, nil
 }
 
-func (c *Coin) GenerateAccountNode(index uint32) (account *Account, err error) {
+//ToDo: Create GetCoin method for Wallet -> returns *Coin
+
+func (c *Coin) DeriveAccountNode(index uint32) (account *Account, err error) {
 	a, err := c.Coin.Child(index)
 	if err != nil {
 		fmt.Println(err)
@@ -117,7 +119,7 @@ func (c *Coin) GenerateAccountNode(index uint32) (account *Account, err error) {
 	return _account, nil
 }
 
-func (a *Account) GenerateChainNode(index uint32) (chain *Chain, err error) {
+func (a *Account) DeriveChainNode(index uint32) (chain *Chain, err error) {
 	c, err := a.Account.Child(index)
 	if err != nil {
 		fmt.Println(err)
@@ -131,7 +133,7 @@ func (a *Account) GenerateChainNode(index uint32) (chain *Chain, err error) {
 	return _chain, nil
 }
 
-func (c *Chain) GenerateAddressNode(index uint32) (address *Address, err error) {
+func (c *Chain) DeriveAddressNode(index uint32) (address *Address, err error) {
 	a, err := c.Chain.Child(index)
 	if err != nil {
 		fmt.Println(err)
