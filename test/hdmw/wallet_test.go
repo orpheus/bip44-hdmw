@@ -2,6 +2,8 @@ package test
 
 import (
 	"encoding/hex"
+	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcutil/hdkeychain"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/orpheus/bip44-hdmw/hdmw"
 	"testing"
@@ -48,8 +50,35 @@ func TestCreateWalletWithMnemonic(t *testing.T) {
 	t.Log(m2)
 
 	if m1 != m2 {
-		t.Error("Error generation MasterNodes. Failed equality check.")
+		t.Error("Error generating MasterNodes. Failed equality check.")
 	}
+}
+
+func TestDeriveMainAddressFromMnemonic(t *testing.T) {
+	wallet := hdmw.CreateWalletWithMnemonic(mnemonic, "")
+	wallet.Initialize([]uint32{hdmw.TypeBitcoin})
+
+	btc := wallet.Coins[0]
+	acc, err := btc.DeriveAccountNode(hdkeychain.HardenedKeyStart + 0)
+	if err != nil {
+		t.Error("Failed to derive account node")
+	}
+
+	ch, err := acc.DeriveChainNode(0)
+	if err != nil {
+		t.Error("Failed to derive chain node")
+	}
+
+	addr, err := ch.DeriveAddressNode(0)
+	if err != nil {
+		t.Error("Failed to derive address node")
+	}
+
+	p2p, err := addr.Address.Address(&chaincfg.MainNetParams)
+
+	t.Log(p2p)
+	t.Error("Failing to derive address correctly")
+
 }
 
 func TestDeriveBTCAccount0(t *testing.T) {
