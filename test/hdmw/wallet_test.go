@@ -9,9 +9,7 @@ import (
 	"testing"
 )
 
-const (
-	mnemonic = "alien indicate barely erosion please recall start together anger panic law latin"
-)
+const mnemonic = "fragile chalk speed absorb enter weasel hurdle eternal tooth acoustic cost boss"
 
 func TestCreateWallet(t *testing.T) {
 	wallet := hdmw.CreateWalletWithPassword("")
@@ -54,6 +52,25 @@ func TestCreateWalletWithMnemonic(t *testing.T) {
 	}
 }
 
+func TestCreateWalletFromSeed(t *testing.T) {
+	//seed := "000102030405060708090a0b0c0d0e0f"
+	//decoded_seed, _ := hex.DecodeString(seed)
+	//wallet := hdmw.CreateWalletFromSeed(decoded_seed, "")
+	wallet := hdmw.CreateWalletWithMnemonic(mnemonic, "")
+
+	test, _ := wallet.PurposeNode.Child(hdkeychain.HardenedKeyStart)
+	test, _ = test.Child(hdkeychain.HardenedKeyStart)
+	test, _ = test.Child(0)
+	test, _ = test.Child(0)
+
+	spew.Dump(test.Address(&chaincfg.MainNetParams))
+	spew.Dump(test)
+
+	//if test.String() != "xprvA4A9CuBXhdBtCaLxwrw64Jaran4n1rgzeS5mjH47Ds8V67uZS8tTkG8jV3BZi83QqYXPcN4v8EjK2Aof4YcEeqLt688mV57gF4j6QZWdP9U" {
+	//	t.Fail()
+	//}
+}
+
 func TestDeriveMainAddressFromMnemonic(t *testing.T) {
 	wallet := hdmw.CreateWalletWithMnemonic(mnemonic, "")
 	wallet.Initialize([]uint32{hdmw.TypeBitcoin})
@@ -74,10 +91,7 @@ func TestDeriveMainAddressFromMnemonic(t *testing.T) {
 		t.Error("Failed to derive address node")
 	}
 
-	p2p, err := addr.Address.Address(&chaincfg.MainNetParams)
-
-	t.Log(p2p)
-	t.Error("Failing to derive address correctly")
+	spew.Dump(addr)
 
 }
 

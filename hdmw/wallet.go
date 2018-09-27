@@ -71,6 +71,22 @@ func CreateWalletWithMnemonic(mnemonic, password string) *Wallet {
 	return &wallet
 }
 
+func CreateWalletFromSeed(seed []byte, password string) *Wallet {
+	//@ToDo: create network params for FLO and LTC, etc
+	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
+	//switch back to purpose
+	purposeNode, _ := masterKey.Child(hdkeychain.HardenedKeyStart + 44)
+
+	wallet := Wallet{
+		Seed: seed,
+		//ToDo: Derive entropy from mnemonic or seed
+		MasterNode:  masterKey,
+		PurposeNode: purposeNode,
+	}
+
+	return &wallet
+}
+
 func (w *Wallet) Initialize(bip44CoinConstants []uint32) (*Wallet, error) {
 
 	for i := 0; i < len(bip44CoinConstants); i++ {
@@ -88,7 +104,10 @@ func (w *Wallet) Initialize(bip44CoinConstants []uint32) (*Wallet, error) {
 
 //pkg/errors w errors.wrap
 func (w *Wallet) InitializeCoinNode(network *chaincfg.Params, bip44CoinConstant uint32) (coin *Coin, err error) {
-	c, err := w.PurposeNode.Child(hdkeychain.HardenedKeyStart + bip44CoinConstant)
+	if bip44CoinConstant < hdkeychain.HardenedKeyStart {
+		bip44CoinConstant += hdkeychain.HardenedKeyStart
+	}
+	c, err := w.PurposeNode.Child(bip44CoinConstant)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -108,6 +127,9 @@ func (w *Wallet) InitializeCoinNode(network *chaincfg.Params, bip44CoinConstant 
 //ToDo: Create GetCoin method for Wallet -> returns *Coin
 
 func (c *Coin) DeriveAccountNode(index uint32) (account *Account, err error) {
+	if index < hdkeychain.HardenedKeyStart {
+		index += hdkeychain.HardenedKeyStart
+	}
 	a, err := c.Coin.Child(index)
 	if err != nil {
 		fmt.Println(err)
