@@ -1,6 +1,7 @@
 package test
 
 import (
+	"encoding/hex"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/orpheus/bip44-hdmw/hdmw"
 	"testing"
@@ -22,6 +23,29 @@ func TestCreateAndInitWallet(t *testing.T) {
 
 	w := spew.Sdump(wallet)
 	t.Log(w)
+}
+
+func TestCreateWalletWithMnemonic(t *testing.T) {
+	wallet := hdmw.CreateWalletWithPassword("")
+	t.Log(wallet.Seed)
+
+	wallet2 := hdmw.CreateWalletWithMnemonic(wallet.Mnemonic, "")
+	t.Log(wallet2.Seed)
+
+	s1 := hex.EncodeToString(wallet.Seed)
+	s2 := hex.EncodeToString(wallet2.Seed)
+	if s1 != s2 {
+		t.Error("Mnemonics did not produce the same seed")
+	}
+
+	m1 := wallet.MasterNode.String()
+	m2 := wallet2.MasterNode.String()
+	t.Log(m1)
+	t.Log(m2)
+
+	if m1 != m2 {
+		t.Error("Error generation MasterNodes. Failed equality check.")
+	}
 }
 
 func TestDeriveBTCAccount0(t *testing.T) {
