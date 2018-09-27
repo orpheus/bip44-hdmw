@@ -34,6 +34,7 @@ type Wallet struct {
 	Coins       []*Coin
 }
 
+//ToDo: add error checking - return err
 func CreateWalletWithPassword(password string) *Wallet {
 	entropy, _ := bip39.NewEntropy(256)
 	mnemonic, _ := bip39.NewMnemonic(entropy)
