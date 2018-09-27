@@ -41,7 +41,7 @@ func CreateWalletWithPassword(password string) *Wallet {
 	seed, _ := bip39.NewSeedWithErrorChecking(mnemonic, password)
 	//@ToDo: create network params for FLO and LTC, etc
 	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
-	purposeNode, _ := masterKey.Child(Purpose)
+	purposeNode, _ := masterKey.Child(Bip44Purpose)
 
 	wallet := Wallet{
 		Mnemonic:    mnemonic,
@@ -58,7 +58,7 @@ func CreateWalletWithMnemonic(mnemonic, password string) *Wallet {
 	seed, _ := bip39.NewSeedWithErrorChecking(mnemonic, password)
 	//@ToDo: create network params for FLO and LTC, etc
 	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
-	purposeNode, _ := masterKey.Child(Purpose)
+	purposeNode, _ := masterKey.Child(Bip44Purpose)
 
 	wallet := Wallet{
 		Mnemonic: mnemonic,
@@ -94,6 +94,7 @@ func (w *Wallet) InitializeCoinNode(network *chaincfg.Params, bip44CoinConstant 
 		return nil, err
 	}
 
+	//ToDo: instead of setting network, attach network to coin node
 	c.SetNet(network)
 
 	_coin := &Coin{
@@ -103,6 +104,7 @@ func (w *Wallet) InitializeCoinNode(network *chaincfg.Params, bip44CoinConstant 
 	return _coin, nil
 }
 
+//ToDo: create function to derive addresses at certain indices
 //ToDo: Create GetCoin method for Wallet -> returns *Coin
 
 func (c *Coin) DeriveAccountNode(index uint32) (account *Account, err error) {
