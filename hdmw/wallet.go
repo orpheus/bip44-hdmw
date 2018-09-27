@@ -21,15 +21,17 @@ type Account struct {
 }
 
 type Coin struct {
+	Name string
 	Coin *hdkeychain.ExtendedKey
 }
 
 type Wallet struct {
-	Mnemonic   string
-	Seed       []byte
-	Entropy    []byte
-	MasterNode *hdkeychain.ExtendedKey
-	Coins      []*Coin
+	Entropy     []byte
+	Mnemonic    string
+	Seed        []byte
+	MasterNode  *hdkeychain.ExtendedKey
+	PurposeNode *hdkeychain.ExtendedKey
+	Coins       []*Coin
 }
 
 func CreateWalletWithPassword(password string) *Wallet {
@@ -38,12 +40,14 @@ func CreateWalletWithPassword(password string) *Wallet {
 	seed, _ := bip39.NewSeedWithErrorChecking(mnemonic, password)
 	//@ToDo: create network params for FLO and LTC, etc
 	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
+	purpose, _ := masterKey.Child(Purpose)
 
 	wallet := Wallet{
-		Mnemonic:   mnemonic,
-		Seed:       seed,
-		Entropy:    entropy,
-		MasterNode: masterKey,
+		Mnemonic:    mnemonic,
+		Seed:        seed,
+		Entropy:     entropy,
+		MasterNode:  masterKey,
+		PurposeNode: purpose,
 	}
 
 	return &wallet
@@ -78,24 +82,9 @@ func (w *Wallet) Initialize(bip44CoinConstants []uint32) (*Wallet, error) {
 	return w, nil
 }
 
-func (w *Wallet) GeneratePurposeNode() (*hdkeychain.ExtendedKey, error) {
-	p, err := w.MasterNode.Child(Purpose)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	return p, nil
-}
-
 //pkg/errors w errors.wrap
 func (w *Wallet) GenerateCoinNode(bip44CoinConstant uint32) (coin *Coin, err error) {
-	p, err := w.GeneratePurposeNode()
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-
-	c, err := p.Child(hdkeychain.HardenedKeyStart + bip44CoinConstant)
+	c, err := w.PurposeNode.Child(hdkeychain.HardenedKeyStart + bip44CoinConstant)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
