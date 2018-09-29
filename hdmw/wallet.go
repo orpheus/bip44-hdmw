@@ -11,19 +11,23 @@ import (
 
 type Address struct {
 	Address *hdkeychain.ExtendedKey
+	Network *chaincfg.Params
 }
 
 type Chain struct {
-	Chain *hdkeychain.ExtendedKey
+	Chain   *hdkeychain.ExtendedKey
+	Network *chaincfg.Params
 }
 
 type Account struct {
 	Account *hdkeychain.ExtendedKey
+	Network *chaincfg.Params
 }
 
 type Coin struct {
-	Name string
-	Coin *hdkeychain.ExtendedKey
+	Name    string
+	Coin    *hdkeychain.ExtendedKey
+	Network *chaincfg.Params
 }
 
 type Wallet struct {
@@ -135,11 +139,11 @@ func (w *Wallet) DeriveCoinNode(network *chaincfg.Params, bip44CoinConstant uint
 		return nil, err
 	}
 
-	//ToDo: instead of setting network, attach network to coin node
 	coin.SetNet(network)
 
 	_coin := &Coin{
-		Coin: coin,
+		Coin:    coin,
+		Network: network,
 	}
 
 	return _coin, nil
@@ -160,6 +164,7 @@ func (c *Coin) DeriveAccountNode(index uint32) (account *Account, err error) {
 
 	_account := &Account{
 		Account: a,
+		Network: c.Network,
 	}
 
 	return _account, nil
@@ -173,7 +178,8 @@ func (a *Account) DeriveChainNode(index uint32) (chain *Chain, err error) {
 	}
 
 	_chain := &Chain{
-		Chain: c,
+		Chain:   c,
+		Network: a.Network,
 	}
 
 	return _chain, nil
@@ -188,6 +194,7 @@ func (c *Chain) DeriveAddressNode(index uint32) (address *Address, err error) {
 
 	_address := &Address{
 		Address: a,
+		Network: c.Network,
 	}
 
 	return _address, nil
