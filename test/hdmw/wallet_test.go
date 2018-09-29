@@ -2,7 +2,6 @@ package test
 
 import (
 	"encoding/hex"
-	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcutil/hdkeychain"
 	"github.com/orpheus/bip44-hdmw/hdmw"
 	"testing"
@@ -77,7 +76,7 @@ func TestDeriveMainAddressFromMnemonic(t *testing.T) {
 		t.Error("Failed to derive address node")
 	}
 
-	address, _ := addr.Address.Address(&chaincfg.MainNetParams)
+	address, _ := addr.Address.Address(addr.Network)
 	if address.String() != "17MvGBBDkFcMixe43TD6PnRgVRNS7tXm6" {
 		t.Fail()
 	}
