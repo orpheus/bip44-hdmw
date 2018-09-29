@@ -65,6 +65,9 @@ func CreateWalletWithPassword(password string) (w *Wallet, err error) {
 }
 
 func CreateWalletFromMnemonic(mnemonic, password string) (w *Wallet, err error) {
+	entropy, _ := bip39.EntropyFromMnemonic(mnemonic)
+	entropyToHexString := hex.EncodeToString(entropy)
+
 	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, password)
 	if err != nil {
 		fmt.Println(err)
@@ -81,6 +84,7 @@ func CreateWalletFromMnemonic(mnemonic, password string) (w *Wallet, err error) 
 		Mnemonic: mnemonic,
 		Seed:     seedToHexString,
 		//ToDo: Derive entropy from mnemonic or seed
+		Entropy:     entropyToHexString,
 		MasterNode:  masterKey,
 		PurposeNode: purposeNode,
 	}
