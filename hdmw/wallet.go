@@ -1,6 +1,7 @@
 package hdmw
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcutil/hdkeychain"
@@ -26,98 +27,115 @@ type Coin struct {
 }
 
 type Wallet struct {
-	Entropy     []byte
+	Entropy     string
 	Mnemonic    string
-	Seed        []byte
+	Seed        string
 	MasterNode  *hdkeychain.ExtendedKey
 	PurposeNode *hdkeychain.ExtendedKey
 	Coins       []*Coin
 }
 
-//ToDo: add error checking - return err
-func CreateWalletWithPassword(password string) *Wallet {
+func CreateWalletWithPassword(password string) (w *Wallet, err error) {
 	entropy, _ := bip39.NewEntropy(256)
+	entropyToHexString := hex.EncodeToString(entropy)
+
 	mnemonic, _ := bip39.NewMnemonic(entropy)
-	seed, _ := bip39.NewSeedWithErrorChecking(mnemonic, password)
+
+	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, password)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	seedToHexString := hex.EncodeToString(seed)
+
 	//@ToDo: create network params for FLO and LTC, etc
+
 	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
 	purposeNode, _ := masterKey.Child(Bip44Purpose)
 
 	wallet := Wallet{
 		Mnemonic:    mnemonic,
-		Seed:        seed,
-		Entropy:     entropy,
+		Seed:        seedToHexString,
+		Entropy:     entropyToHexString,
 		MasterNode:  masterKey,
 		PurposeNode: purposeNode,
 	}
 
-	return &wallet
+	return &wallet, nil
 }
 
-func CreateWalletWithMnemonic(mnemonic, password string) *Wallet {
-	seed, _ := bip39.NewSeedWithErrorChecking(mnemonic, password)
+func CreateWalletFromMnemonic(mnemonic, password string) (w *Wallet, err error) {
+	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, password)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	seedToHexString := hex.EncodeToString(seed)
+
 	//@ToDo: create network params for FLO and LTC, etc
+
 	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
 	purposeNode, _ := masterKey.Child(Bip44Purpose)
 
 	wallet := Wallet{
 		Mnemonic: mnemonic,
-		Seed:     seed,
+		Seed:     seedToHexString,
 		//ToDo: Derive entropy from mnemonic or seed
 		MasterNode:  masterKey,
 		PurposeNode: purposeNode,
 	}
 
-	return &wallet
+	return &wallet, nil
 }
 
-func CreateWalletFromSeed(seed []byte, password string) *Wallet {
+func CreateWalletFromSeed(seed []byte) (w *Wallet, err error) {
 	//@ToDo: create network params for FLO and LTC, etc
 	masterKey, _ := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
-	//switch back to purpose
 	purposeNode, _ := masterKey.Child(hdkeychain.HardenedKeyStart + 44)
 
+	seedToHexString := hex.EncodeToString(seed)
+
 	wallet := Wallet{
-		Seed: seed,
+		Seed: seedToHexString,
 		//ToDo: Derive entropy from mnemonic or seed
 		MasterNode:  masterKey,
 		PurposeNode: purposeNode,
 	}
 
-	return &wallet
+	return &wallet, nil
 }
 
 func (w *Wallet) Initialize(bip44CoinConstants []uint32) (*Wallet, error) {
 
 	for i := 0; i < len(bip44CoinConstants); i++ {
 		//ToDo: make this dynamic to where it will choose the network configs based on the constant
-		c, err := w.InitializeCoinNode(&chaincfg.MainNetParams, bip44CoinConstants[i])
+		coin, err := w.DeriveCoinNode(&chaincfg.MainNetParams, bip44CoinConstants[i])
 		if err != nil {
 			log.Fatal("Failed to Derive coin node: terminate.")
 		}
 
-		w.Coins = append(w.Coins, c)
+		w.Coins = append(w.Coins, coin)
 	}
 
 	return w, nil
 }
 
 //pkg/errors w errors.wrap
-func (w *Wallet) InitializeCoinNode(network *chaincfg.Params, bip44CoinConstant uint32) (coin *Coin, err error) {
+func (w *Wallet) DeriveCoinNode(network *chaincfg.Params, bip44CoinConstant uint32) (c *Coin, err error) {
 	if bip44CoinConstant < hdkeychain.HardenedKeyStart {
 		bip44CoinConstant += hdkeychain.HardenedKeyStart
 	}
-	c, err := w.PurposeNode.Child(bip44CoinConstant)
+	coin, err := w.PurposeNode.Child(bip44CoinConstant)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 
 	//ToDo: instead of setting network, attach network to coin node
-	c.SetNet(network)
+	coin.SetNet(network)
 
 	_coin := &Coin{
-		Coin: c,
+		Coin: coin,
 	}
 
 	return _coin, nil
