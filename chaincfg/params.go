@@ -161,7 +161,9 @@ type Params struct {
 	// RetargetAdjustmentFactor is the adjustment factor used to limit
 	// the minimum and maximum amount of adjustment that can occur between
 	// difficulty retargets.
-	RetargetAdjustmentFactor int64
+	RetargetAdjustmentFactor     int64
+	RetargetAdjustmentFactorUp   int64
+	RetargetAdjustmentFactorDown int64
 
 	// ReduceMinDifficulty defines whether the network should reduce the
 	// minimum required difficulty after a long enough period of time has

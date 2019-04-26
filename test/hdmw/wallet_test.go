@@ -58,7 +58,7 @@ func TestCreateAndInitWallet(t *testing.T) {
 
 func TestDeriveMainAddressFromMnemonic(t *testing.T) {
 	wallet, _ := hdmw.CreateWalletFromMnemonic(testMnemonic1, "")
-	wallet.Initialize([]uint32{hdmw.TypeBitcoin})
+	wallet.Initialize([]uint32{hdmw.TypeBitcoin, hdmw.TypeFlo})
 
 	btc := wallet.Coins[0]
 	acc, err := btc.DeriveAccountNode(hdkeychain.HardenedKeyStart + 0)
